@@ -6,6 +6,11 @@ PORT=${PORT:-8000}
 MODEL=${MODEL:-meta-llama/Llama-3.1-8B-Instruct}
 FRAMEWORK=${FRAMEWORK:-vllm}
 
+if [ -z "$MODEL" ]; then
+    echo "Error: MODEL variable is empty. Please specify the MODEL env." >&2
+    exit 1
+fi
+
 for REQUEST_RATE in "${REQUEST_RATES[@]}";
 do
     NUM_PROMPTS=$(($TOTAL_SECONDS * $REQUEST_RATE))
@@ -25,10 +30,14 @@ do
         --ignore-eos \
         --result-filename "results.json" \
         --metadata "framework=$FRAMEWORK" \
-	--port ${PORT} \
+        --port ${PORT} \
         --save-result
 
 done
+
+    echo ""
+    echo "===== RUNNING $MODEL FOR 2000 PROMPTS WITH infinite QPS ====="
+    echo ""
 
 # inf request rate.pth
 python3 vllm/benchmarks/benchmark_serving.py \
